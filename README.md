@@ -1,0 +1,2 @@
+# Rota Project
+“Rota” is a common modern name for an easy strategy game played  on a round board. The Latin name is probably Terni Lapilli (“Three  pebbles”). Many boards survive, both round and rectangular, and  there must have been variations in play.  This is a very simple game, and Rota is especially appropriate to play  with young family members and friends! Unlike Tic Tac Toe, Rota  avoids a tie
