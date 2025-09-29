@@ -14,8 +14,7 @@ public class Token : MonoBehaviour
                   return;
             }
 
-            
-
+      
             // Optional: change color or scale for feedback
             Node currentNode = transform.parent.GetComponent<Node>();
             if (currentNode != null)
@@ -35,7 +34,13 @@ public class Token : MonoBehaviour
             }
       }
       
-      
+      public void SetSelectedHighlight(bool state)
+      {
+    SpriteRenderer sr = GetComponent<SpriteRenderer>();
+    if (sr != null)
+        sr.color = state ? Color.cyan : (ownerID == 0 ? Color.red : Color.blue);
+      }
+
 
 
       

@@ -9,10 +9,6 @@ public class Node : MonoBehaviour
     public List<Node> connectedNodes = new List<Node>();
 
 
-
-
-
-
     public void OnMouseDown()
     {
         if (GameManager.Instance.IsPlacingPhase)
@@ -27,12 +23,17 @@ public class Node : MonoBehaviour
     }
     
     
-    public void Highlight(bool state)
+public void Highlight(bool state)
 {
     SpriteRenderer sr = GetComponent<SpriteRenderer>();
+    if (sr == null)
+        sr = GetComponentInChildren<SpriteRenderer>();
+
     if (sr != null)
         sr.color = state ? Color.green : Color.white;
 }
+
+
 
 
 
