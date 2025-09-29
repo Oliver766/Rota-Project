@@ -8,6 +8,11 @@ public class Node : MonoBehaviour
     public Token currentToken;
     public List<Node> connectedNodes = new List<Node>();
 
+
+
+
+
+
     public void OnMouseDown()
     {
         if (GameManager.Instance.IsPlacingPhase)
@@ -21,14 +26,13 @@ public class Node : MonoBehaviour
         }
     }
     
-    public void SetHighlight(bool active)
-    {
+    
+    public void Highlight(bool state)
+{
     SpriteRenderer sr = GetComponent<SpriteRenderer>();
     if (sr != null)
-    {
-        sr.color = active ? Color.yellow : Color.white;
-    }
-    }
+        sr.color = state ? Color.green : Color.white;
+}
 
 
 

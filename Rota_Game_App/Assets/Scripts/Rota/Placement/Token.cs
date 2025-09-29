@@ -25,14 +25,18 @@ public class Token : MonoBehaviour
             }
 
 
-                  foreach (Node connected in currentNode.connectedNodes)
+            foreach (Node connected in currentNode.connectedNodes)
             {
-                        if (!connected.isOccupied)
-                              connected.SetHighlight(true);
+                  if (!connected.isOccupied)
+
                         Debug.Log($"Highlighting Node: {connected.name}");
+                        connected.Highlight(true);
 
             }
       }
+      
+      
+
 
       
 
@@ -45,13 +49,14 @@ public class Token : MonoBehaviour
             {
                   foreach (Node connected in currentNode.connectedNodes)
                   {
-                        connected.SetHighlight(false);
-            Debug.Log($"Highlighting Node: {connected.name}");
 
+                        Debug.Log($"Highlighting Node: {connected.name}");
+                        connected.Highlight(false);
+
+                  }
             }
-      }
 
-    }
+      }
 
 
 }
