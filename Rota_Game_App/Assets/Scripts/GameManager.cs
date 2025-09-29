@@ -34,10 +34,16 @@ public class GameManager : MonoBehaviour
     public int winnerID = -1;
     private int? lastWinnerID = null;
 
+    [Header("Timer")]
+    public float moveTimeLimit = 10f; // seconds
+    private float moveTimer = 0f;
+    private bool isMoveTimerActive = false;
+
 
 
     [Header("Game Texts")]
     public TextMeshProUGUI turnText;
+    public TextMeshProUGUI moveTimerText; // ← for numeric countdown
 
     public static GameManager Instance;
     void Awake() => Instance = this;
@@ -56,8 +62,22 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.H))
-            ToggleNodeHighlight(!nodeHighlightEnabled);
+               if (isMoveTimerActive)
+        {
+            moveTimer -= Time.deltaTime;
+
+            if (moveTimerText != null)
+                moveTimerText.text = $"⏱ {Mathf.CeilToInt(moveTimer)}s";
+
+            if (moveTimer <= 0f)
+                CancelMoveDueToTimeout();
+        }
+        else
+        {
+            if (moveTimerText != null)
+                moveTimerText.text = "";
+        }
+
 
     }
 
@@ -66,7 +86,7 @@ public class GameManager : MonoBehaviour
 
     public void PlaceToken(Node node)
     {
-        if (node.isOccupied || gameOver || !IsPlacingPhase) return;
+         if (node.isOccupied || gameOver || !IsPlacingPhase) return;
 
         GameObject tokenObj = Instantiate(tokenPrefab, node.transform.position, Quaternion.identity);
         Token token = tokenObj.GetComponent<Token>();
@@ -96,16 +116,23 @@ public class GameManager : MonoBehaviour
             if (IsPlacingPhase)
                 HighlightValidPlacementNodes();
 
+            if (currentPlayer != aiPlayerID)
+            {
+                moveTimer = moveTimeLimit;
+                isMoveTimerActive = true;
+            }
+
             if (isAIEnabled && currentPlayer == aiPlayerID)
                 StartCoroutine(SafeExecuteAITurn());
         }
+
 
     }
 
 
     public void MoveToken(Token token, Node newNode)
     {
-        if (token == null || newNode == null || newNode.isOccupied || gameOver || !IsConnected(token, newNode))
+                if (token == null || newNode == null || newNode.isOccupied || gameOver || !IsConnected(token, newNode))
         {
             Debug.LogError("Invalid move attempt.");
             return;
@@ -131,6 +158,10 @@ public class GameManager : MonoBehaviour
         token.Deselect();
         selectedToken = null;
 
+        isMoveTimerActive = false; // ✅ stop timer
+        if (moveTimerText != null)
+            moveTimerText.text = "";
+
         CheckWinCondition();
         ClearNodeHighlights();
         ClearTokenHighlights();
@@ -143,15 +174,22 @@ public class GameManager : MonoBehaviour
             if (IsPlacingPhase)
                 HighlightValidPlacementNodes();
 
+            if (currentPlayer != aiPlayerID)
+            {
+                moveTimer = moveTimeLimit;
+                isMoveTimerActive = true;
+            }
+
             if (isAIEnabled && currentPlayer == aiPlayerID)
                 StartCoroutine(SafeExecuteAITurn());
         }
+
     }
 
 
     public void HandleNodeClick(Node node)
     {
-        if (gameOver) return;
+       if (gameOver) return;
 
         if (IsPlacingPhase)
         {
@@ -169,6 +207,9 @@ public class GameManager : MonoBehaviour
                     selectedToken.Select();
                     selectedToken.SetSelectedHighlight(true);
                     HighlightValidMovementTargets(selectedToken);
+
+                    moveTimer = moveTimeLimit;
+                    isMoveTimerActive = true;
                 }
             }
             else
@@ -179,8 +220,6 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("Invalid move or node occupied");
-
                     selectedToken.SetSelectedHighlight(false);
                     selectedToken.Deselect();
                     selectedToken = null;
@@ -189,6 +228,7 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+
 
     }
 
@@ -204,12 +244,16 @@ public class GameManager : MonoBehaviour
 
     void EndGame(int winnerID)
     {
-        lastWinnerID = winnerID; // ✅ set first
-        gameOver = true;
+       gameOver = true;
+        lastWinnerID = winnerID;
         ClearNodeHighlights();
         ClearTokenHighlights();
-        UpdateTurnText(); // ✅ safe to call now
+        isMoveTimerActive = false;
+        if (moveTimerText != null)
+            moveTimerText.text = "";
+        UpdateTurnText();
         Debug.Log($"Player {winnerID + 1} wins!");
+
     }
     #endregion
 
@@ -324,6 +368,7 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// UI Related code for highlighting nodes during placement and movement phases.
     /// </summary>
+    
 
     void HighlightValidPlacementNodes()
     {
@@ -408,29 +453,52 @@ public class GameManager : MonoBehaviour
 
         turnText.text = $"Player {(currentPlayer == 0 ? "I" : "II")}'s Turn";
     }
+
+
+    void CancelMoveDueToTimeout()
+    {
+        isMoveTimerActive = false;
+
+        if (selectedToken != null)
+        {
+            selectedToken.SetSelectedHighlight(false);
+            selectedToken.Deselect();
+            selectedToken = null;
+        }
+
+        ClearNodeHighlights();
+        ClearTokenHighlights();
+
+        if (moveTimerText != null)
+            moveTimerText.text = "";
+
+        Debug.Log($"Player {currentPlayer + 1} timed out.");
+
+    }
     #endregion
     #region AI Logic
-    IEnumerator ExecuteAITurn()
+   IEnumerator ExecuteAITurn()
+{
+    float thinkTime = Random.Range(1.5f, 3.5f); // ⏳ AI "thinking" delay
+    yield return new WaitForSeconds(thinkTime);
+
+    if (gameOver) yield break;
+
+    try
     {
-        yield return new WaitForSeconds(0.5f);
-
-        if (gameOver) yield break;
-
-        try
-        {
-            if (IsPlacingPhase)
-                AITokenPlacement();
-            else
-                AITokenMovement();
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"AI execution failed: {ex.Message}\n{ex.StackTrace}");
-            yield break;
-        }
-
-        UpdateTurnText();
+        if (IsPlacingPhase)
+            AITokenPlacement();
+        else
+            AITokenMovement();
     }
+    catch (System.Exception ex)
+    {
+        Debug.LogError($"AI execution failed: {ex.Message}\n{ex.StackTrace}");
+        yield break;
+    }
+
+    UpdateTurnText();
+}
 
     IEnumerator SafeExecuteAITurn()
     {
