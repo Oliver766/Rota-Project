@@ -278,6 +278,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50e8d369ccb9adf48888805e1556456e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DiceNumberText: {fileID: 1379525171}
 --- !u!4 &112756907
 Transform:
   m_ObjectHideFlags: 0
@@ -822,6 +823,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd965747ee369fa4ca63a9de6371cd54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DiceNumberText: {fileID: 1379525171}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -1096,6 +1098,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   diceNumberText: {fileID: 1848010582}
+  diceNumber: 0
 --- !u!114 &1379525172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1739,7 +1742,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5813126345447715182, guid: 5e0f489bd8703f4439ea9a6f23a1e7eb, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.54
+      value: 0.51
       objectReference: {fileID: 0}
     - target: {fileID: 5813126345447715182, guid: 5e0f489bd8703f4439ea9a6f23a1e7eb, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1747,31 +1750,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5813126345447715182, guid: 5e0f489bd8703f4439ea9a6f23a1e7eb, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9421143
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5813126345447715182, guid: 5e0f489bd8703f4439ea9a6f23a1e7eb, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.25911838
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5813126345447715182, guid: 5e0f489bd8703f4439ea9a6f23a1e7eb, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.17170468
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5813126345447715182, guid: 5e0f489bd8703f4439ea9a6f23a1e7eb, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.1256816
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5813126345447715182, guid: 5e0f489bd8703f4439ea9a6f23a1e7eb, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -32.1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5813126345447715182, guid: 5e0f489bd8703f4439ea9a6f23a1e7eb, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -17.76
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5813126345447715182, guid: 5e0f489bd8703f4439ea9a6f23a1e7eb, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: -10.05
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6493781778503597938, guid: 5e0f489bd8703f4439ea9a6f23a1e7eb, type: 3}
       propertyPath: m_LocalPosition.y

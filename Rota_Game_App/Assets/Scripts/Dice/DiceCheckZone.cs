@@ -7,6 +7,8 @@ public class DiceCheckZone : MonoBehaviour
 {
     Vector3 diceVelocityAtEnter;
 
+    public DiceNumberText DiceNumberText;
+
     void FixedUpdate()
     {
         diceVelocityAtEnter = DiceScript.diceVelocity;

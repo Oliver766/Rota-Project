@@ -46,7 +46,17 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI moveTimerText; // ← for numeric countdown
 
     public static GameManager Instance;
-    void Awake() => Instance = this;
+
+    public StartDeterminer StartDeterminer;
+    void Awake()
+    {
+        Instance = this;
+        // Subscribe to the event
+        StartDeterminer.OnStartPlayerDecided.AddListener(HandleStartPlayer);
+        
+    } 
+     
+
 
     void Start()
     {
@@ -58,7 +68,26 @@ public class GameManager : MonoBehaviour
         }
         UpdateTurnText();
         HighlightValidPlacementNodes();
+        StartDeterminer.DetermineStarter();
+
     }
+
+
+    void HandleStartPlayer(PlayerType starter)
+    {
+        if (starter == PlayerType.Human)
+        {
+            Debug.Log("Human starts the game.");
+            // Trigger human turn logic
+        }
+        else
+        {
+            Debug.Log("AI starts the game.");
+            // Trigger AI turn logic
+            StartCoroutine(SafeExecuteAITurn());
+        }
+    }
+
 
     void Update()
     {
