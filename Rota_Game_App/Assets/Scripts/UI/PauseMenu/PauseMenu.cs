@@ -10,14 +10,14 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button quitButton;
 
+    public LevelLoaading levelLoaading;
+
+
     private bool isPaused = false;
 
     private void Awake()
     {
-        resumeButton.onClick.AddListener(ResumeGame);
-        restartButton.onClick.AddListener(RestartGame);
-        settingsButton.onClick.AddListener(OpenSettings);
-        quitButton.onClick.AddListener(QuitGame);
+       
         pauseMenuCanvas.enabled = false;
     }
 
@@ -36,24 +36,31 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = isPaused ? 0 : 1;
     }
 
-    private void ResumeGame() => TogglePause();
+    public void ResumeGame() => TogglePause();
 
-    private void RestartGame()
+    public void RestartGame()
     {
         Time.timeScale = 1;
-       //add screen transition here if needed
+        //add screen transition here if needed
+       levelLoaading.LoadScene(2); // Assuming 0 is the main menu scene index
+
         
     }
 
-    private void OpenSettings()
+    public void OpenSettings()
     {
         // Hook into your settings UI logic
         Debug.Log("Settings opened");
     }
 
-    private void QuitGame()
+    public void QuitGame()
     {
         Time.timeScale = 1;
-        //add screen transition here if needed
+        //add screen transition here if needed 
+
+        levelLoaading.LoadScene(0); // Assuming 0 is the main menu scene index
+
+        
+        
     }
 }
