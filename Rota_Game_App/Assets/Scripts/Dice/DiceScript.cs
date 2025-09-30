@@ -9,6 +9,7 @@ public class DiceScript : MonoBehaviour
     public static Vector3 diceVelocity;
 
     public DiceNumberText DiceNumberText;
+    public GameObject ResultPanel;
 
 
     void Start()
@@ -23,12 +24,13 @@ public class DiceScript : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-           
+
         }
     }
 
     public void Roll()
     {
+        StartCoroutine(WaitForRoll());
         DiceNumberText.diceNumber = 0;
         float dirx = Random.Range(0, 500);
         float diry = Random.Range(0, 500);
@@ -38,6 +40,13 @@ public class DiceScript : MonoBehaviour
         rb.AddForce(transform.up * 500);
         rb.AddTorque(dirx, diry, dirz);
         DiceNumberText.RollAIDice();
+    }
+     
+
+     IEnumerator WaitForRoll()
+     {
+         yield return new WaitForSeconds(3);
+         ResultPanel.SetActive(true);
      }
 
 }

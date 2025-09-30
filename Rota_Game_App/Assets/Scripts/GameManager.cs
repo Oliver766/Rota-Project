@@ -75,10 +75,15 @@ public class GameManager : MonoBehaviour
 
     void HandleStartPlayer(PlayerType starter)
     {
+        // ✅ Fix 1: Set currentPlayer based on starter
+        currentPlayer = (starter == PlayerType.Human) ? 0 : aiPlayerID;
+
+
         if (starter == PlayerType.Human)
         {
             Debug.Log("Human starts the game.");
-            // Trigger human turn logic
+            UpdateTurnText();
+
         }
         else
         {
@@ -485,24 +490,41 @@ public class GameManager : MonoBehaviour
 
 
     void CancelMoveDueToTimeout()
+{
+    isMoveTimerActive = false;
+
+    if (selectedToken != null)
     {
-        isMoveTimerActive = false;
+        selectedToken.SetSelectedHighlight(false);
+        selectedToken.Deselect();
+        selectedToken = null;
+    }
 
-        if (selectedToken != null)
+    ClearNodeHighlights();
+    ClearTokenHighlights();
+
+    if (moveTimerText != null)
+        moveTimerText.text = "";
+
+    Debug.Log($"Player {currentPlayer + 1} timed out.");
+
+    // ✅ Advance turn after timeout
+    currentPlayer = 1 - currentPlayer;
+    UpdateTurnText();
+
+    if (!gameOver)
+    {
+        if (IsPlacingPhase)
+            HighlightValidPlacementNodes();
+
+        if (currentPlayer == aiPlayerID && isAIEnabled)
+            StartCoroutine(SafeExecuteAITurn());
+        else
         {
-            selectedToken.SetSelectedHighlight(false);
-            selectedToken.Deselect();
-            selectedToken = null;
+            moveTimer = moveTimeLimit;
+            isMoveTimerActive = true;
         }
-
-        ClearNodeHighlights();
-        ClearTokenHighlights();
-
-        if (moveTimerText != null)
-            moveTimerText.text = "";
-
-        Debug.Log($"Player {currentPlayer + 1} timed out.");
-
+    }
     }
     #endregion
     #region AI Logic

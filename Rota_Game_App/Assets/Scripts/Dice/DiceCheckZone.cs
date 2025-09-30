@@ -9,6 +9,8 @@ public class DiceCheckZone : MonoBehaviour
 
     public DiceNumberText DiceNumberText;
 
+
+
     void FixedUpdate()
     {
         diceVelocityAtEnter = DiceScript.diceVelocity;

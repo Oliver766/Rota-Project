@@ -1,39 +1,42 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-
 public enum PlayerType
 {
     Human,
     AI
 }
 
-
 public class StartDeterminer : MonoBehaviour
 {
+    [Header("Roll Values")]
     public int PlayerRoll;
     public int AIRoll;
 
+    [Header("Events")]
     public UnityEvent<PlayerType> OnStartPlayerDecided;
 
-    void Start()
+    private void Start()
+    {
+        LoadRolls();
+        DetermineStarter();
+    }
+
+    private void LoadRolls()
     {
         PlayerRoll = PlayerPrefs.GetInt("PlayerRoll", 0);
         AIRoll = PlayerPrefs.GetInt("AIRoll", 0);
-      
     }
 
     public void DetermineStarter()
     {
         if (PlayerRoll > AIRoll)
         {
-            OnStartPlayerDecided?.Invoke(PlayerType.Human);
-            Debug.Log(PlayerType.Human);
+            DecideStarter(PlayerType.Human);
         }
         else if (AIRoll > PlayerRoll)
         {
-            OnStartPlayerDecided?.Invoke(PlayerType.AI);
-            Debug.Log(PlayerType.AI);
+            DecideStarter(PlayerType.AI);
         }
         else
         {
@@ -41,12 +44,17 @@ public class StartDeterminer : MonoBehaviour
         }
     }
 
-    private void HandleTie()
+    private void DecideStarter(PlayerType starter)
     {
-        // Optional: reroll, prompt UI, or default to a player
-        Debug.Log("Tie detected — rerolling...");
-        // Trigger reroll logic or fallback
+        OnStartPlayerDecided?.Invoke(starter);
+        Debug.Log($"Starter decided: {starter}");
     }
 
-
+    private void HandleTie()
+    {
+        Debug.Log("Tie detected — rerolling...");
+        // Example fallback: random choice
+        PlayerType fallback = (Random.value < 0.5f) ? PlayerType.Human : PlayerType.AI;
+        DecideStarter(fallback);
+    }
 }

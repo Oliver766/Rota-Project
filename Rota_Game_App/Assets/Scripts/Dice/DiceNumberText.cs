@@ -5,7 +5,9 @@ using UnityEngine.UI;
 public class DiceNumberText : MonoBehaviour
 {
 
-    public TextMeshProUGUI diceNumberText;
+
+    public TextMeshProUGUI playerResultText;
+    public TextMeshProUGUI AIResultText;
     public int diceNumber;
 
     public int PlayerRoll { get; private set; }
@@ -18,8 +20,9 @@ public class DiceNumberText : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        diceNumberText.text = diceNumber.ToString();
         PlayerRoll = diceNumber;
+        playerResultText.text = PlayerRoll.ToString();
+        AIResultText.text = AIRoll.ToString();
         PlayerPrefs.SetInt("PlayerRoll", PlayerRoll);
         PlayerPrefs.SetInt("AIRoll", AIRoll);
     }
