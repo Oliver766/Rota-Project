@@ -51,8 +51,7 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
-        // Subscribe to the event
-        StartDeterminer.OnStartPlayerDecided.AddListener(HandleStartPlayer);
+       
         
     } 
      
@@ -60,6 +59,8 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+         // Subscribe to the event
+        StartDeterminer.OnStartPlayerDecided.AddListener(HandleStartPlayer);
         // Confirm node connections
         foreach (Node node in allNodes)
         {
