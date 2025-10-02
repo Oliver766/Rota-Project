@@ -38,10 +38,10 @@ public class StartDeterminer : MonoBehaviour
         {
             DecideStarter(PlayerType.AI);
         }
-        else
-        {
-            HandleTie();
-        }
+       // else
+        //{
+            //HandleTie();
+        //}
     }
 
     private void DecideStarter(PlayerType starter)
@@ -50,11 +50,11 @@ public class StartDeterminer : MonoBehaviour
         Debug.Log($"Starter decided: {starter}");
     }
 
-    private void HandleTie()
-    {
-        Debug.Log("Tie detected — rerolling...");
+   // private void HandleTie()
+   // {
+        //Debug.Log("Tie detected — rerolling...");
         // Example fallback: random choice
-        PlayerType fallback = (Random.value < 0.5f) ? PlayerType.Human : PlayerType.AI;
-        DecideStarter(fallback);
-    }
+       // PlayerType fallback = (Random.value < 0.5f) ? PlayerType.Human : PlayerType.AI;
+        //DecideStarter(fallback);
+    //}
 }
