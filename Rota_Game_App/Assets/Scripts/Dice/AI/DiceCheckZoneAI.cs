@@ -27,29 +27,29 @@ public class DiceCheckZoneAI : MonoBehaviour
 
     void OnTriggerStay(Collider col)
     {
-        if (diceVelocityAtEnter.x == 0f && diceVelocityAtEnter.y == 0f && diceVelocityAtEnter.z == 0f) {
+        if (diceVelocityAtEnter.x == 0f && diceVelocityAtEnter.y == 0f && diceVelocityAtEnter.z == 0f)
+        {
             switch (col.gameObject.name)
             {
                 case "AISide 1":
-                    DiceNumberText.aiNumber = 1; 
-
-                    break;
-                case "AISide 2":
                     DiceNumberText.aiNumber = 2;
                     break;
-                case "AISide 3":
+                case "AISide 2":
                     DiceNumberText.aiNumber = 4;
                     break;
+                case "AISide 3":
+                    DiceNumberText.aiNumber = 1;
+                    break;
                 case "AISide 4":
-                    DiceNumberText.aiNumber = 3;
-                    break;
-                case "AISide 5":
-                    DiceNumberText.aiNumber = 6;
-                    break;
-                case "AISide 6":
                     DiceNumberText.aiNumber = 5;
                     break;
-                    
+                case "AISide 5":
+                    DiceNumberText.aiNumber = 3;
+                    break;
+                case "AISide 6":
+                    DiceNumberText.aiNumber = 6;
+                    break;
+
             }
 
         }

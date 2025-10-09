@@ -1192,13 +1192,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 581206150}
-  DiceNumberText: {fileID: 1753374196}
   playerDiceVisual: {fileID: 1498184362}
   rollButton: {fileID: 164635574}
-  checkObj: {fileID: 112756904}
-  aidice: {fileID: 1498184362}
-  AIDiceScript: {fileID: 1498184366}
-  aichecker: {fileID: 1438024931}
+  checkIndicator: {fileID: 112756904}
+  aiDiceObject: {fileID: 1498184362}
+  aiChecker: {fileID: 1438024931}
+  diceManager: {fileID: 1753374196}
+  aiDiceScript: {fileID: 1498184366}
 --- !u!1001 &783014357
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2177,12 +2177,28 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 637661668220593859, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
+    - target: {fileID: 637661668220593859, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
       propertyPath: m_Name
       value: AISide 3
       objectReference: {fileID: 0}
+    - target: {fileID: 1759615610459848165, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.978
+      objectReference: {fileID: 0}
+    - target: {fileID: 2979025832165453186, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
     - target: {fileID: 2979025832165453186, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
       propertyPath: m_Name
       value: AISide 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3839109136790168769, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.019
       objectReference: {fileID: 0}
     - target: {fileID: 5813126345447715182, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2224,10 +2240,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6493781778503597938, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493781778503597938, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6555905742016475026, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 3443629218296621865, guid: 0000000000000000d000000000000000, type: 0}
     - target: {fileID: 6555905742016475026, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
       propertyPath: m_Name
       value: AISide 4
       objectReference: {fileID: 0}
+    - target: {fileID: 6603054425501763855, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 7422848464349959988, guid: 0000000000000000d000000000000000, type: 0}
     - target: {fileID: 6603054425501763855, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
       propertyPath: m_Name
       value: AISide 2
@@ -2241,12 +2273,32 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6740740916283584094, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
+    - target: {fileID: 6740740916283584094, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
       propertyPath: m_Name
       value: AISide 1
       objectReference: {fileID: 0}
     - target: {fileID: 7332656790212712277, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 7148428337604731935, guid: 0000000000000000d000000000000000, type: 0}
+    - target: {fileID: 7332656790212712277, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
       propertyPath: m_Name
       value: AISide 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588942318413417354, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.004
+      objectReference: {fileID: 0}
+    - target: {fileID: 8876324934734760610, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.99
+      objectReference: {fileID: 0}
+    - target: {fileID: 9150399427824907312, guid: 26bd09f4f41edab41bf39b5a4ab1167e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.999
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2453,11 +2505,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rbAI: {fileID: 1498184364}
-  DiceNumberText: {fileID: 1753374196}
-  AIDiceVisual: {fileID: 1498184362}
-  checkObj: {fileID: 1438024931}
-  resultPanel: {fileID: 300297580}
+  aiDiceVisual: {fileID: 1498184362}
   statusText: {fileID: 2003153405}
+  checkIndicator: {fileID: 1438024931}
+  resultPanel: {fileID: 300297580}
+  diceManager: {fileID: 1753374196}
 --- !u!1 &1572012827
 GameObject:
   m_ObjectHideFlags: 0
@@ -2802,12 +2854,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerResultText: {fileID: 1572012830}
-  AIResultText: {fileID: 1765543608}
-  ReRoillText: {fileID: 2003153405}
+  aiResultText: {fileID: 1765543608}
+  rerollText: {fileID: 2003153405}
+  continueButton: {fileID: 1686903556}
+  rerollButton: {fileID: 290798920}
   diceNumber: 0
   aiNumber: 0
-  ContinueButton: {fileID: 1686903556}
-  rerollButton: {fileID: 290798920}
 --- !u!1 &1765543607
 GameObject:
   m_ObjectHideFlags: 0

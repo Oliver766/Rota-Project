@@ -7,73 +7,65 @@ public class RotaAIManager : MonoBehaviour
     [Header("References")]
     public GameManager gameManager;
 
-    public IEnumerator ExecuteAITurn()
+    public IEnumerator SafeExecuteAITurn()
     {
-        float thinkTime = Random.Range(1.5f, 3.5f); // ⏳ AI "thinking" delay
-        yield return new WaitForSeconds(thinkTime);
+        yield return new WaitForSeconds(Random.Range(1.5f, 3.5f)); // ⏳ AI "thinking" delay
 
         if (gameManager.gameOver) yield break;
 
         try
         {
-            if (gameManager.IsPlacingPhase)
-                AITokenPlacement();
+            if (gameManager.isPlacingPhase)
+                ExecutePlacement();
             else
-                AITokenMovement();
+                ExecuteMovement();
         }
         catch (System.Exception ex)
         {
             Debug.LogError($"AI execution failed: {ex.Message}\n{ex.StackTrace}");
-            yield break;
         }
 
         gameManager.UpdateTurnText();
     }
 
-    public IEnumerator SafeExecuteAITurn()
-    {
-        IEnumerator aiRoutine = ExecuteAITurn();
-        while (true)
-        {
-            try
-            {
-                if (!aiRoutine.MoveNext()) yield break;
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"AI Turn crashed: {ex.Message}\n{ex.StackTrace}");
-                yield break;
-            }
-
-            yield return aiRoutine.Current;
-        }
-    }
-
-    private void AITokenPlacement()
+    private void ExecutePlacement()
     {
         Node bestNode = gameManager.aiDifficulty switch
         {
             AIDifficulty.Hard => FindWinningPlacement(gameManager.aiPlayerID)
                               ?? FindBlockingPlacement(1 - gameManager.aiPlayerID)
                               ?? FindRandomEmptyNode(),
+
             AIDifficulty.Medium => FindBlockingPlacement(1 - gameManager.aiPlayerID)
                                 ?? FindRandomEmptyNode(),
+
             _ => FindRandomEmptyNode()
         };
 
         if (bestNode != null)
-            bestNode.Highlight(true);
-
-        gameManager.PlaceToken(bestNode);
+        {
+            bestNode.Highlight(true); // Optional visual cue
+            gameManager.PlaceToken(bestNode);
+        }
+        else
+        {
+            Debug.LogWarning("AI could not find a valid placement.");
+        }
     }
 
-    private void AITokenMovement()
+    private void ExecuteMovement()
     {
         switch (gameManager.aiDifficulty)
         {
-            case AIDifficulty.Hard: TryWinOrBlockOrMove(); break;
-            case AIDifficulty.Medium: TryBlockOrMoveRandom(); break;
-            default: TryEasyMove(); break;
+            case AIDifficulty.Hard:
+                TryWinOrBlockOrMove();
+                break;
+            case AIDifficulty.Medium:
+                TryBlockOrMoveRandom();
+                break;
+            default:
+                TryEasyMove();
+                break;
         }
     }
 

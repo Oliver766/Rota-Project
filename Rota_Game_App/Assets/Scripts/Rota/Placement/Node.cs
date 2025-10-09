@@ -11,7 +11,7 @@ public class Node : MonoBehaviour
 
     public void OnMouseDown()
     {
-        if (GameManager.Instance.IsPlacingPhase)
+        if (GameManager.Instance.isPlacingPhase)
         {
             if (!isOccupied)
                 GameManager.Instance.PlaceToken(this);
@@ -21,17 +21,17 @@ public class Node : MonoBehaviour
             GameManager.Instance.HandleNodeClick(this);
         }
     }
-    
-    
-public void Highlight(bool state)
-{
-    SpriteRenderer sr = GetComponent<SpriteRenderer>();
-    if (sr == null)
-        sr = GetComponentInChildren<SpriteRenderer>();
 
-    if (sr != null)
-        sr.color = state ? Color.green : Color.white;
-}
+
+    public void Highlight(bool state)
+    {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr == null)
+            sr = GetComponentInChildren<SpriteRenderer>();
+
+        if (sr != null)
+            sr.color = state ? Color.green : Color.white;
+    }
 
 
 

@@ -13,117 +13,91 @@ public enum AIDifficulty
 
 public class GameManager : MonoBehaviour
 {
-    [Header("Game settings")]
+    [Header("Game Settings")]
     public GameObject tokenPrefab;
     public List<Node> allNodes;
     public AIDifficulty aiDifficulty = AIDifficulty.Medium;
 
     [Header("Managers")]
     public RotaAIManager aiManager;
-    public StartDeterminer StartDeterminer;
+    public StartDeterminer startDeterminer;
     public CurrencyManager currencyManager;
+    public AchievementManager achievementManager;
 
-    [Header("Bools")]
+    [Header("State Flags")]
     public bool isAIEnabled = true;
-    public bool IsPlacingPhase = true;
+    public bool isPlacingPhase = true;
     public bool gameOver = false;
     public bool nodeHighlightEnabled = true;
+    public bool aiControlsPlayerStart = true; // AI plays first move for Player 0
 
-    [Header("Game Ints")]
+
+    [Header("Game State")]
     public int currentPlayer = 0;
     public int aiPlayerID = 1;
-    private int tokensPlaced = 0;
+    public int tokensPlaced = 0;
     public int winnerID = -1;
     private int? lastWinnerID = null;
 
-    [Header("Game Texts")]
+    [Header("UI")]
     public TextMeshProUGUI turnText;
 
     private Token selectedToken;
     public static GameManager Instance;
 
-    void Awake()
-    {
-        Instance = this;
-    }
+    void Awake() => Instance = this;
 
     void Start()
     {
-        StartDeterminer.OnStartPlayerDecided.AddListener(HandleStartPlayer);
-
-        foreach (Node node in allNodes)
-        {
-            string connectedNames = string.Join(", ", node.connectedNodes.Select(n => n.name));
-            Debug.Log($"{node.name} connected to: {connectedNames}");
-        }
-
+        startDeterminer.OnStartPlayerDecided.AddListener(HandleStartPlayer);
         UpdateTurnText();
         HighlightValidPlacementNodes();
         StartCoroutine(DelayedStart());
-
-     
     }
 
     IEnumerator DelayedStart()
     {
-    yield return new WaitForSeconds(0.1f);
-    StartDeterminer.DetermineStarter();
+        yield return new WaitForSeconds(0.1f);
+        startDeterminer.DetermineStarter();
     }
-
-
 
     void HandleStartPlayer(PlayerType starter)
     {
         currentPlayer = (starter == PlayerType.Human) ? 0 : aiPlayerID;
+        UpdateTurnText();
 
-        if (starter == PlayerType.Human)
+        if (starter == PlayerType.AI || aiControlsPlayerStart)
         {
-            Debug.Log("Human starts the game.");
-            UpdateTurnText();
-        }
-        else
-        {
-            Debug.Log("AI starts the game.");
-            UpdateTurnText();
             StartCoroutine(aiManager.SafeExecuteAITurn());
         }
     }
 
-    #region Core Game Logic
+
 
     public void PlaceToken(Node node)
     {
-        if (node.isOccupied || gameOver || !IsPlacingPhase) return;
+        if (node.isOccupied || gameOver || !isPlacingPhase) return;
 
         GameObject tokenObj = Instantiate(tokenPrefab, node.transform.position, Quaternion.identity);
         Token token = tokenObj.GetComponent<Token>();
         token.ownerID = currentPlayer;
 
-        SpriteRenderer sr = tokenObj.GetComponent<SpriteRenderer>();
-        if (sr != null)
-            sr.color = currentPlayer == 0 ? Color.red : Color.blue;
-
+        tokenObj.GetComponent<SpriteRenderer>().color = currentPlayer == 0 ? Color.red : Color.blue;
         token.transform.parent = node.transform;
         node.isOccupied = true;
         node.currentToken = token;
 
         tokensPlaced++;
+        if (currentPlayer == 0 && IsStrategicPlacement(node))
+        {
+            currencyManager.AddCurrency("DE", 25);
+            achievementManager.RegisterProgress("perfect_turn");
+        }
+
         if (tokensPlaced >= 6)
         {
-            IsPlacingPhase = false;
-            ClearNodeHighlights();
-               currencyManager.AddCurrency("DE", 100); // Example: Add 100 Gold at game start
+            isPlacingPhase = false;
 
-            currentPlayer = 1 - currentPlayer;
-            UpdateTurnText();
-
-            if (!gameOver && isAIEnabled && currentPlayer == aiPlayerID)
-            {
-                StartCoroutine(aiManager.SafeExecuteAITurn());
-                return;
-            }
-
-            return;
         }
 
         CheckWinCondition();
@@ -131,33 +105,25 @@ public class GameManager : MonoBehaviour
         ClearTokenHighlights();
 
         currentPlayer = 1 - currentPlayer;
+
+        if (aiControlsPlayerStart && currentPlayer == aiPlayerID)
+            aiControlsPlayerStart = false;
+
+
+
         UpdateTurnText();
 
-        if (!gameOver)
-        {
-            if (IsPlacingPhase)
-                HighlightValidPlacementNodes();
-
-            if (isAIEnabled && currentPlayer == aiPlayerID)
-                StartCoroutine(aiManager.SafeExecuteAITurn());
-        }
+        if (!gameOver && isAIEnabled && currentPlayer == aiPlayerID)
+            StartCoroutine(aiManager.SafeExecuteAITurn());
+        else if (!gameOver && isPlacingPhase)
+            HighlightValidPlacementNodes();
     }
 
     public void MoveToken(Token token, Node newNode)
     {
-        if (token == null || newNode == null || newNode.isOccupied || gameOver || !IsConnected(token, newNode))
-        {
-            Debug.LogError("Invalid move attempt.");
-            return;
-        }
+        if (token == null || newNode == null || newNode.isOccupied || gameOver || !IsConnected(token, newNode)) return;
 
-        Node oldNode = token.transform.parent?.GetComponent<Node>();
-        if (oldNode == null)
-        {
-            Debug.LogWarning("Token's parent node is missing.");
-            return;
-        }
-
+        Node oldNode = token.transform.parent.GetComponent<Node>();
         oldNode.isOccupied = false;
         oldNode.currentToken = null;
 
@@ -176,63 +142,49 @@ public class GameManager : MonoBehaviour
         ClearTokenHighlights();
 
         currentPlayer = 1 - currentPlayer;
+
+        // Reset AI override after first move
+        if (aiControlsPlayerStart && currentPlayer == aiPlayerID)
+            aiControlsPlayerStart = false;
+
         UpdateTurnText();
 
-        if (!gameOver)
-        {
-            if (IsPlacingPhase)
-                HighlightValidPlacementNodes();
-
-            if (isAIEnabled && currentPlayer == aiPlayerID)
-                StartCoroutine(aiManager.SafeExecuteAITurn());
-        }
+        if (!gameOver && isAIEnabled && currentPlayer == aiPlayerID)
+            StartCoroutine(aiManager.SafeExecuteAITurn());
+        else if (!gameOver && isPlacingPhase)
+            HighlightValidPlacementNodes();
     }
 
     public void HandleNodeClick(Node node)
     {
         if (gameOver) return;
 
-        if (IsPlacingPhase)
+        if (isPlacingPhase)
         {
             if (currentPlayer == aiPlayerID) return;
             PlaceToken(node);
         }
         else
         {
-            if (selectedToken == null)
+            if (selectedToken == null && node.isOccupied && node.currentToken.ownerID == currentPlayer)
             {
-                if (node.isOccupied && node.currentToken.ownerID == currentPlayer)
-                {
-                    ClearTokenHighlights();
-                    selectedToken = node.currentToken;
-                    selectedToken.Select();
-                    selectedToken.SetSelectedHighlight(true);
-                    HighlightValidMovementTargets(selectedToken);
-                }
+                selectedToken = node.currentToken;
+                selectedToken.Select();
+                selectedToken.SetSelectedHighlight(true);
+                HighlightValidMovementTargets(selectedToken);
+            }
+            else if (selectedToken != null && !node.isOccupied && IsConnected(selectedToken, node))
+            {
+                MoveToken(selectedToken, node);
             }
             else
             {
-                if (!node.isOccupied && IsConnected(selectedToken, node))
-                {
-                    MoveToken(selectedToken, node);
-                }
-                else
-                {
-                    selectedToken.SetSelectedHighlight(false);
-                    selectedToken.Deselect();
-                    selectedToken = null;
-                    ClearNodeHighlights();
-                    ClearTokenHighlights();
-                }
+                selectedToken?.Deselect();
+                selectedToken = null;
+                ClearNodeHighlights();
+                ClearTokenHighlights();
             }
         }
-    }
-
-    public bool IsConnected(Token token, Node targetNode)
-    {
-        if (token == null || token.transform.parent == null) return false;
-        Node currentNode = token.transform.parent.GetComponent<Node>();
-        return currentNode != null && currentNode.connectedNodes.Contains(targetNode);
     }
 
     public void EndGame(int winnerID)
@@ -242,12 +194,13 @@ public class GameManager : MonoBehaviour
         ClearNodeHighlights();
         ClearTokenHighlights();
         UpdateTurnText();
-        Debug.Log($"Player {winnerID + 1} wins!");
+
+        if (winnerID == 0)
+        {
+            currencyManager.AddCurrency("DE", 100);
+            achievementManager.RegisterProgress("win_game");
+        }
     }
-
-    #endregion
-
-    #region Win Condition & AI Helpers
 
     public void CheckWinCondition()
     {
@@ -266,6 +219,17 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public bool IsConnected(Token token, Node targetNode)
+    {
+        Node currentNode = token.transform.parent.GetComponent<Node>();
+        return currentNode != null && currentNode.connectedNodes.Contains(targetNode);
+    }
+
+    public bool IsStrategicPlacement(Node node)
+    {
+        return FindWinningPlacement(currentPlayer) == node || FindBlockingPlacement(1 - currentPlayer) == node;
+    }
+
     public Node FindWinningPlacement(int playerID)
     {
         foreach (int[] line in GetWinningLines())
@@ -276,15 +240,10 @@ public class GameManager : MonoBehaviour
             foreach (int index in line)
             {
                 Node node = allNodes[index];
-                if (node.isOccupied)
-                {
-                    if (node.currentToken.ownerID == playerID)
-                        count++;
-                }
-                else
-                {
+                if (node.isOccupied && node.currentToken.ownerID == playerID)
+                    count++;
+                else if (!node.isOccupied)
                     emptyNode = node;
-                }
             }
 
             if (count == 2 && emptyNode != null)
@@ -294,152 +253,61 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
-    public Node FindBlockingPlacement(int opponentID)
-    {
-        return FindWinningPlacement(opponentID);
-    }
+    public Node FindBlockingPlacement(int opponentID) => FindWinningPlacement(opponentID);
 
     public Node FindRandomEmptyNode()
     {
-        List<Node> emptyNodes = new List<Node>();
-        foreach (Node node in allNodes)
-        {
-            if (!node.isOccupied)
-                emptyNodes.Add(node);
-        }
-
-        if (emptyNodes.Count > 0)
-            return emptyNodes[UnityEngine.Random.Range(0, emptyNodes.Count)];
-
-        return null;
+        var emptyNodes = allNodes.Where(n => !n.isOccupied).ToList();
+        return emptyNodes.Count > 0 ? emptyNodes[Random.Range(0, emptyNodes.Count)] : null;
     }
 
     public bool IsWinningLine(int playerID)
     {
-        foreach (int[] line in GetWinningLines())
+        return GetWinningLines().Any(line =>
         {
             Token t0 = allNodes[line[0]].currentToken;
             Token t1 = allNodes[line[1]].currentToken;
             Token t2 = allNodes[line[2]].currentToken;
-
-            if (t0 != null && t1 != null && t2 != null)
-            {
-                if (t0.ownerID == playerID && t1.ownerID == playerID && t2.ownerID == playerID)
-                    return true;
-            }
-        }
-
-        return false;
+            return t0 != null && t1 != null && t2 != null &&
+                   t0.ownerID == playerID && t1.ownerID == playerID && t2.ownerID == playerID;
+        });
     }
 
-    public List<int[]> GetWinningLines()
+    public List<int[]> GetWinningLines() => new()
     {
-        return new List<int[]>
-        {
-            new int[] {0, 1, 2},
-            new int[] {3, 4, 5},
-            new int[] {6, 7, 8},
-            new int[] {0, 3, 6},
-            new int[] {1, 4, 7},
-            new int[] {2, 5, 8},
-            new int[] {0, 4, 8},
-            new int[] {2, 4, 6}
-        };
-    }
-
-    #endregion
-
-    #region UI and Highlighting
+        new[] {0, 1, 2}, new[] {3, 4, 5}, new[] {6, 7, 8},
+        new[] {0, 3, 6}, new[] {1, 4, 7}, new[] {2, 5, 8},
+        new[] {0, 4, 8}, new[] {2, 4, 6}
+    };
 
     public void HighlightValidPlacementNodes()
     {
         if (!nodeHighlightEnabled) return;
-
         foreach (Node node in allNodes)
-            node.Highlight(!node.isOccupied && IsPlacingPhase);
+            node.Highlight(!node.isOccupied && isPlacingPhase);
     }
 
     public void HighlightValidMovementTargets(Token token)
     {
         if (!nodeHighlightEnabled || token == null || token.transform.parent == null) return;
-
         Node currentNode = token.transform.parent.GetComponent<Node>();
         foreach (Node node in allNodes)
             node.Highlight(currentNode.connectedNodes.Contains(node) && !node.isOccupied);
     }
 
-
-   public void HighlightMovableTokens()
-    {
-        foreach (Node node in allNodes)
-        {
-            Token token = node.currentToken;
-            if (token != null && token.ownerID == currentPlayer)
-            {
-                bool canMove = node.connectedNodes.Any(n => !n.isOccupied);
-                token.SetSelectedHighlight(canMove);
-            }
-        }
-    }
-
-   public void ClearNodeHighlights()
-    {
-        foreach (Node node in allNodes)
-            node.Highlight(false);
-    }
-
-    public void ToggleNodeHighlight(bool state)
-    {
-        Debug.Log($"Toggling node highlight: {state}");
-        Debug.Log($"Node highlight enabled: {nodeHighlightEnabled}");
-
-        nodeHighlightEnabled = state;
-        ClearNodeHighlights();
-        if (state)
-        {
-            if (IsPlacingPhase)
-                HighlightValidPlacementNodes();
-            else if (selectedToken != null)
-                HighlightValidMovementTargets(selectedToken);
-        }
-
-    }
-
-   public void ClearTokenHighlights()
-    {
-        foreach (Node node in allNodes)
-        {
-            Token token = node.currentToken;
-            if (token != null)
-                token.SetSelectedHighlight(false); // resets to owner color
-        }
-    }
+    public void ClearNodeHighlights() => allNodes.ForEach(n => n.Highlight(false));
+    public void ClearTokenHighlights() => allNodes.ForEach(n => n.currentToken?.SetSelectedHighlight(false));
 
     public void UpdateTurnText()
     {
-        if (gameOver)
-        {
-            if (lastWinnerID.HasValue)
-            {
-                turnText.text = $"Player {lastWinnerID.Value + 1} wins!";
-                Debug.Log($"Turn text updated to: Player {lastWinnerID.Value + 1} wins!");
-            }
-            else
-            {
-                turnText.text = "Game Over";
-                Debug.LogWarning("Game over triggered but winnerID was not set.");
-            }
-
-            return;
-        }
-
-        turnText.text = $"Player {(currentPlayer == 0 ? "I" : "II")}'s Turn";
+        turnText.text = gameOver
+            ? lastWinnerID.HasValue ? $"Player {lastWinnerID.Value + 1} wins!" : "Game Over"
+            : $"Player {(currentPlayer == 0 ? "I" : "II")}'s Turn";
     }
-
-
-    #endregion
-   
 }
+
+
+
 
 
 

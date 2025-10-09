@@ -4,61 +4,65 @@ using UnityEngine.UI;
 
 public class DiceManager : MonoBehaviour
 {
-     public TextMeshProUGUI playerResultText;
-    public TextMeshProUGUI AIResultText;
-
-     public TextMeshProUGUI ReRoillText;
-    public int diceNumber;
-    public int aiNumber;
-
-
-    public Button ContinueButton;
+    [Header("UI References")]
+    public TextMeshProUGUI playerResultText;
+    public TextMeshProUGUI aiResultText;
+    public TextMeshProUGUI rerollText;
+    public Button continueButton;
     public Button rerollButton;
 
+    [Header("Dice Values")]
+    [SerializeField] public int diceNumber;
+    [SerializeField] public int aiNumber;
 
     public int PlayerRoll { get; private set; }
-
     public int AIRoll { get; private set; }
 
+    void Start()
+    {
+        rerollText.text = "";
+        //UpdateRolls();
+        // CheckForDraw();
+    }
 
-
-
-    // Update is called once per frame
     void Update()
+    {
+        UpdateRolls();
+    }
+
+    public void UpdateRolls()
     {
         PlayerRoll = diceNumber;
         AIRoll = aiNumber;
+
         playerResultText.text = PlayerRoll.ToString();
-        AIResultText.text = AIRoll.ToString();
+        aiResultText.text = AIRoll.ToString();
+
         PlayerPrefs.SetInt("PlayerRoll", PlayerRoll);
         PlayerPrefs.SetInt("AIRoll", AIRoll);
     }
 
-    public void Start()
+    public void CheckForDraw()
     {
-        ReRoillText.text = "";
-    }
+        bool isDraw = PlayerRoll == AIRoll;
 
+        rerollButton.gameObject.SetActive(isDraw);
+        continueButton.gameObject.SetActive(!isDraw);
 
-
-    public void checkfordraw()
-    {
-        if (PlayerRoll == AIRoll)
+        if (isDraw)
         {
             Debug.Log("It's a draw! Rerolling...");
-            rerollButton.gameObject.SetActive(true);
-            ContinueButton.gameObject.SetActive(false);
-
+            rerollText.text = "Draw! Please reroll.";
         }
         else
         {
-            ContinueButton.gameObject.SetActive(true);
-            rerollButton.gameObject.SetActive(false);
+            rerollText.text = "";
         }
     }
-    
+
     public void Reroll()
     {
-       LevelLoaading.levelLoaading.LoadScene(1);
+        // Replace with your actual scene loading logic
+        LevelLoaading.levelLoaading.LoadScene(1);
     }
 }
