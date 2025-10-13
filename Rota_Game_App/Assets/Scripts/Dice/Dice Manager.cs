@@ -11,6 +11,9 @@ public class DiceManager : MonoBehaviour
     public Button continueButton;
     public Button rerollButton;
 
+
+
+
     [Header("Dice Values")]
     [SerializeField] public int diceNumber;
     [SerializeField] public int aiNumber;

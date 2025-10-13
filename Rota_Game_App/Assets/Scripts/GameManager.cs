@@ -29,7 +29,14 @@ public class GameManager : MonoBehaviour
     public bool isPlacingPhase = true;
     public bool gameOver = false;
     public bool nodeHighlightEnabled = true;
-    public bool aiControlsPlayerStart = true; // AI plays first move for Player 0
+    [Header("AI Control Settings")]
+    public bool aiPlaysFirstTurn = true; // AI places first token if it wins dice roll
+
+
+    [Header("Help Timer")]
+    public float helpCountdownDuration = 15f; // seconds
+    public float helpTimer;
+    public bool helpOffered = false;
 
 
     [Header("Game State")]
@@ -50,10 +57,24 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         startDeterminer.OnStartPlayerDecided.AddListener(HandleStartPlayer);
-        UpdateTurnText();
-        HighlightValidPlacementNodes();
         StartCoroutine(DelayedStart());
     }
+
+    void Update()
+    {
+        if (currentPlayer == 0 && !gameOver && !helpOffered)
+        {
+            helpTimer -= Time.deltaTime;
+
+            if (helpTimer <= 0f)
+            {
+                OfferHelpToPlayer();
+                helpOffered = true;
+            }
+        }
+
+    }
+
 
     IEnumerator DelayedStart()
     {
@@ -66,10 +87,44 @@ public class GameManager : MonoBehaviour
         currentPlayer = (starter == PlayerType.Human) ? 0 : aiPlayerID;
         UpdateTurnText();
 
-        if (starter == PlayerType.AI || aiControlsPlayerStart)
+        int playerRoll = PlayerPrefs.GetInt("PlayerRoll");
+        int aiRoll = PlayerPrefs.GetInt("AIRoll");
+
+        // Only allow AI to play first if it's the assigned starter AND it rolled higher
+        if (starter == PlayerType.AI && aiRoll > playerRoll)
         {
+            Debug.Log("AI is the starter and rolled higher — placing first token.");
             StartCoroutine(aiManager.SafeExecuteAITurn());
         }
+        else
+        {
+            HighlightValidPlacementNodes(); // Only highlight if human starts
+            Debug.Log("Human starts or AI did not win the roll — waiting for player input.");
+        }
+    }
+
+
+    void OfferHelpToPlayer()
+    {
+        Debug.Log("Offering help to player...");
+
+        if (isPlacingPhase)
+        {
+            HighlightValidPlacementNodes();
+            turnText.text = "Need help? Try placing on a highlighted node.";
+        }
+        else
+        {
+            foreach (Node node in allNodes)
+            {
+                if (node.isOccupied && node.currentToken.ownerID == currentPlayer)
+                    HighlightValidMovementTargets(node.currentToken);
+            }
+
+            turnText.text = "Stuck? Try moving a highlighted token.";
+        }
+
+        // Optional: trigger sound, animation, or UI popup
     }
 
 
@@ -92,6 +147,9 @@ public class GameManager : MonoBehaviour
         {
             currencyManager.AddCurrency("DE", 25);
             achievementManager.RegisterProgress("perfect_turn");
+            helpTimer = helpCountdownDuration;
+            helpOffered = false;
+
         }
 
         if (tokensPlaced >= 6)
@@ -106,8 +164,8 @@ public class GameManager : MonoBehaviour
 
         currentPlayer = 1 - currentPlayer;
 
-        if (aiControlsPlayerStart && currentPlayer == aiPlayerID)
-            aiControlsPlayerStart = false;
+        if (aiPlaysFirstTurn && currentPlayer == aiPlayerID)
+            aiPlaysFirstTurn = false;
 
 
 
@@ -144,8 +202,8 @@ public class GameManager : MonoBehaviour
         currentPlayer = 1 - currentPlayer;
 
         // Reset AI override after first move
-        if (aiControlsPlayerStart && currentPlayer == aiPlayerID)
-            aiControlsPlayerStart = false;
+        if (aiPlaysFirstTurn && currentPlayer == aiPlayerID)
+            aiPlaysFirstTurn = false;
 
         UpdateTurnText();
 
