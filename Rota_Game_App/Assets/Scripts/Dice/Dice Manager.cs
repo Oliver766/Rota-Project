@@ -11,7 +11,7 @@ public class DiceManager : MonoBehaviour
     public Button continueButton;
     public Button rerollButton;
 
-
+    public LevelLoaading LevelLoaading;
 
 
     [Header("Dice Values")]
@@ -66,6 +66,6 @@ public class DiceManager : MonoBehaviour
     public void Reroll()
     {
         // Replace with your actual scene loading logic
-        LevelLoaading.levelLoaading.LoadScene(1);
+        LevelLoaading.LoadScene(1);
     }
 }
