@@ -1,10 +1,17 @@
 using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
+using TMPro;
 
 public class CurrencyManager : MonoBehaviour
 {
-    public void GetCurrencyBalance()
+    private Dictionary<string, int> currencyCache = new Dictionary<string, int>();
+
+    
+        public void GetCurrencyBalance()
     {
         var request = new GetUserInventoryRequest();
 
@@ -55,8 +62,24 @@ public class CurrencyManager : MonoBehaviour
         });
     }
 
-  
+    public bool HasEnoughCurrency(string currencyCode, int amount)
+    {
+    if (!currencyCache.ContainsKey(currencyCode))
+    {
+        Debug.LogWarning($"Currency {currencyCode} not found in cache.");
+        return false;
+    }
+
+    return currencyCache[currencyCode] >= amount;
+    }
+
+
+    
 }
+
+
+  
+
 
 
 
