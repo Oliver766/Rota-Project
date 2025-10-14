@@ -82,26 +82,28 @@ public class GameManager : MonoBehaviour
         startDeterminer.DetermineStarter();
     }
 
-    void HandleStartPlayer(PlayerType starter)
+ void HandleStartPlayer(PlayerType starter)
+{
+    currentPlayer = (starter == PlayerType.Human) ? 0 : aiPlayerID;
+    UpdateTurnText();
+
+    int playerRoll = PlayerPrefs.GetInt("PlayerRoll");
+    int aiRoll = PlayerPrefs.GetInt("AIRoll");
+
+    // AI only plays first if it's the starter and rolled higher
+    if (starter == PlayerType.AI && aiRoll > playerRoll)
     {
-        currentPlayer = (starter == PlayerType.Human) ? 0 : aiPlayerID;
-        UpdateTurnText();
-
-        int playerRoll = PlayerPrefs.GetInt("PlayerRoll");
-        int aiRoll = PlayerPrefs.GetInt("AIRoll");
-
-        // Only allow AI to play first if it's the assigned starter AND it rolled higher
-        if (starter == PlayerType.AI && aiRoll > playerRoll)
-        {
-            Debug.Log("AI is the starter and rolled higher — placing first token.");
-            StartCoroutine(aiManager.SafeExecuteAITurn());
-        }
-        else
-        {
-            HighlightValidPlacementNodes(); // Only highlight if human starts
-            Debug.Log("Human starts or AI did not win the roll — waiting for player input.");
-        }
+        Debug.Log("AI is the starter and rolled higher — placing first token.");
+        StartCoroutine(aiManager.SafeExecuteAITurn());
     }
+    else
+    {
+        HighlightValidPlacementNodes();
+        Debug.Log("Human starts or AI did not win the roll — waiting for player input.");
+    }
+}
+
+
 
 
     void OfferHelpToPlayer()
@@ -129,89 +131,97 @@ public class GameManager : MonoBehaviour
 
 
 
-    public void PlaceToken(Node node)
+   public void PlaceToken(Node node)
+{
+    if (node.isOccupied || gameOver || !isPlacingPhase) return;
+
+    GameObject tokenObj = Instantiate(tokenPrefab, node.transform.position, Quaternion.identity);
+    Token token = tokenObj.GetComponent<Token>();
+    token.ownerID = currentPlayer;
+
+    tokenObj.GetComponent<SpriteRenderer>().color = currentPlayer == 0 ? Color.red : Color.blue;
+    token.transform.parent = node.transform;
+    node.isOccupied = true;
+    node.currentToken = token;
+
+    tokensPlaced++;
+    if (currentPlayer == 0 && IsStrategicPlacement(node))
     {
-        if (node.isOccupied || gameOver || !isPlacingPhase) return;
-
-        GameObject tokenObj = Instantiate(tokenPrefab, node.transform.position, Quaternion.identity);
-        Token token = tokenObj.GetComponent<Token>();
-        token.ownerID = currentPlayer;
-
-        tokenObj.GetComponent<SpriteRenderer>().color = currentPlayer == 0 ? Color.red : Color.blue;
-        token.transform.parent = node.transform;
-        node.isOccupied = true;
-        node.currentToken = token;
-
-        tokensPlaced++;
-        if (currentPlayer == 0 && IsStrategicPlacement(node))
-        {
-            currencyManager.AddCurrency("DE", 25);
-            achievementManager.RegisterProgress("perfect_turn");
-            helpTimer = helpCountdownDuration;
-            helpOffered = false;
-
-        }
-
-        if (tokensPlaced >= 6)
-        {
-            isPlacingPhase = false;
-
-        }
-
-        CheckWinCondition();
-        ClearNodeHighlights();
-        ClearTokenHighlights();
-
-        currentPlayer = 1 - currentPlayer;
-
-        if (aiPlaysFirstTurn && currentPlayer == aiPlayerID)
-            aiPlaysFirstTurn = false;
-
-
-
-        UpdateTurnText();
-
-        if (!gameOver && isAIEnabled && currentPlayer == aiPlayerID)
-            StartCoroutine(aiManager.SafeExecuteAITurn());
-        else if (!gameOver && isPlacingPhase)
-            HighlightValidPlacementNodes();
+        currencyManager.AddCurrency("DE", 25);
+        achievementManager.RegisterProgress("perfect_turn");
     }
+
+    if (tokensPlaced >= 6)
+        isPlacingPhase = false;
+
+    CheckWinCondition();
+    ClearNodeHighlights();
+    ClearTokenHighlights();
+
+    // Reset AI override before switching turn
+    if (aiPlaysFirstTurn && currentPlayer == aiPlayerID)
+        aiPlaysFirstTurn = false;
+
+    currentPlayer = 1 - currentPlayer;
+
+    if (currentPlayer == 0)
+    {
+        helpTimer = helpCountdownDuration;
+        helpOffered = false;
+    }
+
+    UpdateTurnText();
+
+    if (!gameOver && isAIEnabled && currentPlayer == aiPlayerID)
+        StartCoroutine(aiManager.SafeExecuteAITurn());
+    else if (!gameOver && isPlacingPhase)
+        HighlightValidPlacementNodes();
+}
+
+
 
     public void MoveToken(Token token, Node newNode)
+{
+    if (token == null || newNode == null || newNode.isOccupied || gameOver || !IsConnected(token, newNode)) return;
+
+    Node oldNode = token.transform.parent.GetComponent<Node>();
+    oldNode.isOccupied = false;
+    oldNode.currentToken = null;
+
+    newNode.isOccupied = true;
+    newNode.currentToken = token;
+
+    token.transform.position = newNode.transform.position;
+    token.transform.parent = newNode.transform;
+
+    token.SetSelectedHighlight(false);
+    token.Deselect();
+    selectedToken = null;
+
+    CheckWinCondition();
+    ClearNodeHighlights();
+    ClearTokenHighlights();
+
+    // Reset AI override before switching turn
+    if (aiPlaysFirstTurn && currentPlayer == aiPlayerID)
+        aiPlaysFirstTurn = false;
+
+    currentPlayer = 1 - currentPlayer;
+
+    if (currentPlayer == 0)
     {
-        if (token == null || newNode == null || newNode.isOccupied || gameOver || !IsConnected(token, newNode)) return;
-
-        Node oldNode = token.transform.parent.GetComponent<Node>();
-        oldNode.isOccupied = false;
-        oldNode.currentToken = null;
-
-        newNode.isOccupied = true;
-        newNode.currentToken = token;
-
-        token.transform.position = newNode.transform.position;
-        token.transform.parent = newNode.transform;
-
-        token.SetSelectedHighlight(false);
-        token.Deselect();
-        selectedToken = null;
-
-        CheckWinCondition();
-        ClearNodeHighlights();
-        ClearTokenHighlights();
-
-        currentPlayer = 1 - currentPlayer;
-
-        // Reset AI override after first move
-        if (aiPlaysFirstTurn && currentPlayer == aiPlayerID)
-            aiPlaysFirstTurn = false;
-
-        UpdateTurnText();
-
-        if (!gameOver && isAIEnabled && currentPlayer == aiPlayerID)
-            StartCoroutine(aiManager.SafeExecuteAITurn());
-        else if (!gameOver && isPlacingPhase)
-            HighlightValidPlacementNodes();
+        helpTimer = helpCountdownDuration;
+        helpOffered = false;
     }
+
+    UpdateTurnText();
+
+    if (!gameOver && isAIEnabled && currentPlayer == aiPlayerID)
+        StartCoroutine(aiManager.SafeExecuteAITurn());
+    else if (!gameOver && isPlacingPhase)
+        HighlightValidPlacementNodes();
+}
+
 
     public void HandleNodeClick(Node node)
     {

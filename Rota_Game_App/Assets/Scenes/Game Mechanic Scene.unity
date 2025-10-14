@@ -2497,7 +2497,10 @@ MonoBehaviour:
   isPlacingPhase: 1
   gameOver: 0
   nodeHighlightEnabled: 1
-  aiControlsPlayerStart: 1
+  aiPlaysFirstTurn: 1
+  helpCountdownDuration: 15
+  helpTimer: 0
+  helpOffered: 0
   currentPlayer: 0
   aiPlayerID: 1
   tokensPlaced: 0

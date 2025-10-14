@@ -55,7 +55,7 @@ public class DiceManager : MonoBehaviour
         if (isDraw)
         {
             Debug.Log("It's a draw! Rerolling...");
-            rerollText.text = "Draw! Please reroll.";
+            //rerollText.text = "Draw! Please reroll.";
         }
         else
         {
