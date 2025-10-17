@@ -2655,19 +2655,21 @@ MonoBehaviour:
   currencyManager: {fileID: 1371931470}
   achievementManager: {fileID: 1290855244}
   isAIEnabled: 1
-  isPlacingPhase: 1
+  isPlacingPhase: 0
   gameOver: 0
   aiPlaysFirstTurn: 1
-  helpCountdownDuration: 15
-  helpTimer: 0
-  helpOffered: 0
   currentPlayer: 0
   aiPlayerID: 1
   tokensPlaced: 0
   winnerID: -1
   turnText: {fileID: 520258570}
+  inactivityThreshold: 6
+  timeSinceLastMove: 0
   showHintButton: {fileID: 1164698495}
   hintCost: 10
+  helpTimer: 0
+  helpOffered: 0
+  helpCountdownDuration: 15
 --- !u!4 &1290855239
 Transform:
   m_ObjectHideFlags: 0
