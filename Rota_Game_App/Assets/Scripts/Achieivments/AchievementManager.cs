@@ -6,6 +6,21 @@ public class AchievementManager : MonoBehaviour
     public List<Achievement> achievements;
     private Dictionary<string, int> progress = new();
 
+    public static AchievementManager Instance;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     public void RegisterProgress(string achievementID, int increment = 1)
     {
         if (!progress.ContainsKey(achievementID))
